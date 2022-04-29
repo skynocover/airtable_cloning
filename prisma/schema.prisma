@@ -1,0 +1,59 @@
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model users {
+    id       String @id @default(auto()) @map("_id") @db.ObjectId
+    account  String @unique
+    password String
+}
+
+model tables {
+    id      String    @id @default(auto()) @map("_id") @db.ObjectId
+    name    String
+    columns columns[]
+    rows    rows[]
+}
+
+model types {
+    id      String    @id @default(auto()) @map("_id") @db.ObjectId
+    name    String
+    columns columns[]
+}
+
+model columns {
+    id   String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+
+    types   types  @relation(references: [id], fields: [typesId])
+    typesId String @db.ObjectId
+
+    tables    tables      @relation(references: [id], fields: [tablesId])
+    tablesId  String      @db.ObjectId
+    row_value row_value[]
+}
+
+model rows {
+    id   String @id @default(auto()) @map("_id") @db.ObjectId
+    name String
+
+    tables    tables      @relation(references: [id], fields: [tablesId])
+    tablesId  String      @db.ObjectId
+    row_value row_value[]
+}
+
+model row_value {
+    id    String @id @default(auto()) @map("_id") @db.ObjectId
+    value Json
+
+    columns   columns @relation(references: [id], fields: [columnsId])
+    columnsId String  @db.ObjectId
+
+    rows   rows   @relation(references: [id], fields: [rowsId])
+    rowsId String @db.ObjectId
+}
